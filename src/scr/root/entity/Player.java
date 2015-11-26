@@ -8,27 +8,38 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Vector2f;
 
 import scr.root.world.World;
 import src.root.objects.Block;
 
 public class Player extends Entity{
 	
+	public Vector2f acceleration = new Vector2f(0,0);
 	public final int SPEED = 3;
 	public final float FRICTION = 0.50f;
 	public final int shootDelay = 1000;
-	public float rotation;
+	public float angle;
 	public float shootTimer = 0;
 	public float toX = Mouse.getX(), toY = Mouse.getY();
 	public float centerX = 0, centerY = 0;
 	public float lastX = 0, lastY = 0;
 	public Rectangle top = new Rectangle(getBounds().getX() + 15, getBounds().getY(), getBounds().getWidth() - 30, getBounds().getHeight());
-
+	public float rotationalSpeed = 0.01f;
+	public boolean accelerating, turningLeft, turningRight, decelerating;
+	public float drag = 1.0f;
+	
 	public Player(World world, int x, int y, int width, int height){
 		super(world, x, y, width, height);
 		
-		this.centerX = top.getCenterX();
+		this.centerX = top.getCenterX();	
 		this.centerY = top.getCenterY();
+		this.rotationalSpeed = 3f;
+		this.accelerating = false;
+		this.decelerating = false;
+		this.turningLeft = false;
+		this.turningRight = false;
+		this.angle = 270;
 	}
 	
 	@Override
@@ -52,20 +63,22 @@ public class Player extends Entity{
 		 */
 		
 		if(input.isKeyDown(Input.KEY_W) || input.isKeyDown(Input.KEY_UP)){
-			 y -= SPEED * FRICTION;
-		}
+			 accelerating = true;
+		}else accelerating = false;
 		if(input.isKeyDown(Input.KEY_A) || input.isKeyDown(Input.KEY_LEFT)){
-			x -= SPEED * FRICTION;
-		}
+			 turningLeft = true;
+		}else turningLeft = false;
 		
 		if(input.isKeyDown(Input.KEY_D) || input.isKeyDown(Input.KEY_RIGHT)){
-			x += SPEED * FRICTION;
-		}
+			 turningRight = true;
+		}else turningRight = false;
 		
 		if(input.isKeyDown(Input.KEY_S) || input.isKeyDown(Input.KEY_DOWN)){			
-			y += SPEED * FRICTION;
-		}
+			decelerating = true;
+		}else decelerating = false;
 		
+		move();
+
 		this.getBounds().setLocation(x, y);
 		
 		doRigidCollisionDetection();	
@@ -74,6 +87,24 @@ public class Player extends Entity{
 		
 		if(input.isKeyDown(Input.KEY_SPACE)){
 			shoot();
+		}
+	}
+	
+	public void move(){
+		if(turningRight){
+			x += SPEED * FRICTION;
+		}
+		
+		if(turningLeft){
+			x -= SPEED * FRICTION;
+		}
+		
+		if(accelerating){
+			y -= SPEED * FRICTION;
+		}
+		
+		if(decelerating){
+			y += SPEED * FRICTION;
 		}
 	}
 	
@@ -102,9 +133,7 @@ public class Player extends Entity{
 						}else if(getBounds().getMinY() >= b.getBounds().getMinY() && (getBounds().getMaxY() <= b.getBounds().getMaxY())){
 							x = b.getBounds().getMinX() - getBounds().getWidth();
 						}else if(getBounds().getMaxY() > b.getBounds().getMaxY()){
-							if(getBounds().getMaxY() > b.getBounds().getMaxY()){
-								x = b.getBounds().getMinX() - getBounds().getWidth();
-							}
+							x = b.getBounds().getMinX() - getBounds().getWidth();
 						}
 					}
 					
@@ -114,23 +143,25 @@ public class Player extends Entity{
 						y = b.getBounds().getMinY() - getBounds().getHeight();
 					}
 					
-					/* Colliding right */
+					/* Colliding from the right */
 					
 					if(getBounds().getMaxX() > b.getBounds().getMaxX() && !(getBounds().getMinX() < b.getBounds().getMaxX() - SPEED)){
-						if(getBounds().getMinY() < b.getBounds().getMinY() && getBounds().getMaxY() > b.getBounds().getMinY()){							
-							x = b.getBounds().getMaxX(); /* Right top half */
+						if(getBounds().getMinY() < b.getBounds().getMinY() && getBounds().getMaxY() > b.getBounds().getMinY()){
+							x = b.getBounds().getMaxX();
 						}else if(getBounds().getMinY() >= b.getBounds().getMinY() && (getBounds().getMaxY() <= b.getBounds().getMaxY())){
-							x = b.getBounds().getMaxX(); /* Right middle */
+							x = b.getBounds().getMaxX();
 						}else if(getBounds().getMinY() < b.getBounds().getMaxY() && (getBounds().getMaxY() > b.getBounds().getMaxY())){
-							x = b.getBounds().getMaxX(); /* Right bottom half */
+							x = b.getBounds().getMaxX();
 						}
 					}
 					
-					/* Colliding bottom */
+					/* Collding with bottom */
 					
 					if(getBounds().getMinY() + SPEED > b.getBounds().getMaxY()){
 						y = b.getBounds().getMaxY();
 					}
+					
+					
 						
 					getBounds().setLocation(x, y);
 				}
@@ -145,8 +176,10 @@ public class Player extends Entity{
 	@Override
 	public void render(GameContainer gc, Graphics g){
 		/* Bottom half */
+		//g.rotate(x + getWidth() / 2, y + getHeight() / 2, angle);
 		g.fill(this.getBounds());
 		g.setColor(Color.blue);
+		//g.rotate(x + getWidth() / 2, y + getHeight() / 2, -angle);
 
 		
 		/* Rotate top portion */
@@ -156,6 +189,13 @@ public class Player extends Entity{
 		g.rotate(x + getWidth() / 2, y + getHeight() / 2, -theta);
 
 		g.setColor(Color.white);
+		
+		g.drawString(angle + "", 40, 80);
+		g.drawString("turningLeft: " + turningLeft, 40, 100);
+		g.drawString("turningRight: " + turningRight, 40, 120);
+		g.drawString("accelerating: " + accelerating, 40, 140);
+		g.drawString("decelerating: " + decelerating, 40, 160);
+
 	}
 
 	@Override

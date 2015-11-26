@@ -26,6 +26,8 @@ public class Core extends StateBasedGame{
 		app.setDisplayMode(1080, 680, false);
 		app.setVSync(true);
 		app.start();
+		
+		
 	}
 
 }

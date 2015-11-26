@@ -6,12 +6,18 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
+import src.root.ext.SoundSystem;
+
 public class PlayState extends BasicGameState{
 
 	/* Our current world */
 	public World currentWorld;
 	
 	public void init(GameContainer gc, StateBasedGame s) throws SlickException {
+		SoundSystem ss = SoundSystem.getSoundSystem();
+		ss.init("devs.ogg");
+		ss.loadSound();
+		
 		this.currentWorld = new GameWorld();
 		currentWorld.init(gc, s);
 	}

@@ -8,6 +8,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 import scr.root.entity.Entity;
 import scr.root.entity.Player;
+import src.root.ext.SoundSystem;
 import src.root.objects.Block;
 
 public class GameWorld extends World{
@@ -26,6 +27,8 @@ public class GameWorld extends World{
 		collidables.add(new Block(this, gc.getWidth() / 2 - 15, gc.getHeight() / 3 * 2 - (gc.getHeight() / 8), 30, gc.getHeight() / 8)); /* Upper middle */
 		collidables.add(new Block(this, gc.getWidth()/ 3 *2 + 30, gc.getHeight() / 3, 30, gc.getHeight() / 3)); /* Right-middle wall */
 		
+
+		SoundSystem.getSoundSystem().play("devs.ogg");
 		//populate(addToWorld);
 	}
 	
